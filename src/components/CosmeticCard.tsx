@@ -12,10 +12,16 @@ export default function CosmeticCard({ cosmetic, owned=false }: Props){
   const [loading, setLoading] = useState(false)
   return ( 
     <div className="overflow-hidden transition-transform duration-300 bg-gray-900 border border-gray-700 rounded-lg shadow-lg card-neon hover:scale-105">
-      <div className="relative">
+      <div className="relative overflow-hidden w-full">
         {cosmetic.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cosmetic.image} alt={cosmetic.name} className="cosmetic-img" />
+          <img 
+            src={cosmetic.image} 
+            alt={cosmetic.name} 
+            className="cosmetic-img"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="flex items-center justify-center cosmetic-img bg-zinc-900">No Image</div>
         )}

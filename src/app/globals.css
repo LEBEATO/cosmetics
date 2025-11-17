@@ -55,10 +55,32 @@ body {
 
 .cosmetic-img {
     width: 100%;
+    max-width: 100%;
     height: 220px;
+    min-height: 220px;
+    max-height: 220px;
     object-fit: cover;
+    object-position: center;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+    display: block;
+    /* Garantir que a imagem não ultrapasse os limites */
+    box-sizing: border-box;
+    /* Melhor qualidade de renderização */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: auto;
+    /* Aceleração de hardware para melhor performance */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Suavização de imagem */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Forçar renderização nítida */
+    image-rendering: high-quality;
+    /* Evitar blur durante transformações */
+    will-change: transform;
 }
 
 

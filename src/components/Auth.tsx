@@ -4,6 +4,7 @@ import { LogIn, LogOut, User } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { logout } from '@/app/actions'
+import { useRouter } from 'next/navigation'
 
 // Mock da sessão para desenvolvimento.
 // No futuro, substitua por: import { useSession } from 'next-auth/react'
@@ -15,6 +16,16 @@ const useSession = () => ({
 export default function Auth() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      // Se logout falhar, redireciona manualmente
+      router.push('/login')
+    }
+  }
 
   if (status === 'loading') {
     return <div className="h-10 w-24 animate-pulse rounded-lg bg-gray-800" />
@@ -57,15 +68,13 @@ export default function Auth() {
               </p>
             </div>
             <div className="my-2 h-px w-full bg-gray-700" />
-            <form action={logout}>
-              <button
-                type="submit"
-                className="flex w-full items-center rounded-md px-2 py-2 text-sm text-red-400 hover:bg-red-500/10"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </button>
-            </form>
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center rounded-md px-2 py-2 text-sm text-red-400 hover:bg-red-500/10"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </button>
           </div>
         </div>
       )}

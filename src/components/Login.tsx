@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { signup, login } from '@/app/actions'
-import { Mail, Lock, User, Loader2, LogIn, UserPlus } from 'lucide-react'
+import { Mail, Lock, User, Loader2, LogIn, UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 // Componente para o botão de submit, que mostra o estado de carregamento
@@ -13,7 +13,7 @@ function SubmitButton({ isLogin }: { isLogin: boolean }) {
   return (
     <button
       type="submit"
-      className="flex items-center justify-center w-full px-4 py-3 font-bold text-white transition duration-300 bg-blue-600 shadow-md rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-300 hover:shadow-lg hover:bg-blue-700 disabled:bg-blue-400"
+      className="flex items-center justify-center w-full px-4 py-3 font-bold text-white transition duration-300 bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-300 hover:shadow-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
       disabled={pending}
     >
       {pending ? (
@@ -58,9 +58,23 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
         type: 'success',
       })
       // Limpa o parâmetro da URL para não mostrar a mensagem novamente ao recarregar
-      router.replace('/login')
+      const callbackUrl = searchParams.get('callbackUrl')
+      router.replace(callbackUrl ? `/login?callbackUrl=${callbackUrl}` : '/login')
     }
   }, [searchParams, router])
+
+  // Redirecionar após login bem-sucedido
+  useEffect(() => {
+    const state = isLogin ? loginState : signupState
+    if (state?.type === 'success') {
+      const callbackUrl = searchParams.get('callbackUrl')
+      if (callbackUrl) {
+        router.push(decodeURIComponent(callbackUrl))
+      } else {
+        router.push('/')
+      }
+    }
+  }, [loginState, signupState, isLogin, searchParams, router])
 
   useEffect(() => {
     const state = isLogin ? loginState : signupState
@@ -79,30 +93,37 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
 
   const messageClasses =
     message?.type === 'error'
-      ? 'bg-red-900/20 text-red-400 border-red-500/50'
-      : 'bg-green-900/20 text-green-400 border-green-500/50'
+      ? 'bg-red-900/30 text-red-300 border-red-500/50'
+      : 'bg-green-900/30 text-green-300 border-green-500/50'
 
   return (
-    <div className="relative z-10 w-full max-w-md p-6 bg-gray-900 border border-gray-700 shadow-2xl bg-opacity-80 md:p-10 rounded-2xl backdrop-blur-sm">
-      <h1 className="mb-2 text-3xl font-extrabold text-center text-gray-100">
-        {isLogin ? 'Bem-vindo(a) Login' : 'Crie Sua Conta'}
-      </h1>
-      <p className="mb-8 text-sm text-center text-gray-400">
-        {isLogin ? 'Entre para acessar sua área.' : 'Cadastre-se para começar.'}
-      </p>
+    <div className="relative z-10 w-full max-w-md p-6 bg-gray-900/90 border border-gray-700/50 shadow-2xl backdrop-blur-sm md:p-10 rounded-2xl">
+      <div className="mb-6 text-center">
+        <h1 className="mb-2 text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+          {isLogin ? 'Bem-vindo de volta!' : 'Crie sua conta'}
+        </h1>
+        <p className="text-sm text-gray-400">
+          {isLogin ? 'Entre para acessar sua área' : 'Cadastre-se para começar'}
+        </p>
+      </div>
 
       {message?.text && (
         <div
-          className={`p-3 mb-6 rounded-xl border transition-all duration-300 ${messageClasses}`}
+          className={`flex items-center gap-2 p-3 mb-6 rounded-xl border transition-all duration-300 ${messageClasses}`}
           role="alert"
         >
+          {message.type === 'error' ? (
+            <AlertCircle className="flex-shrink-0" size={18} />
+          ) : (
+            <CheckCircle className="flex-shrink-0" size={18} />
+          )}
           <p className="text-sm">{message.text}</p>
         </div>
       )}
 
-      <form action={isLogin ? loginAction : signupAction}>
+      <form action={isLogin ? loginAction : signupAction} className="space-y-5">
         {!isLogin && (
-          <div className="mb-5">
+          <div>
             <label htmlFor="name" className="sr-only">
               Nome
             </label>
@@ -114,15 +135,15 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
                 type="text"
                 id="name"
                 name="name"
-                placeholder="Seu Nome Completo"
+                placeholder="Seu nome completo"
                 required={!isLogin}
-                className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800 border border-gray-600 rounded-xl focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50"
+                className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800/50 border border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>
         )}
 
-        <div className="mb-5">
+        <div>
           <label htmlFor="email" className="sr-only">
             Email
           </label>
@@ -136,12 +157,12 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
               name="email"
               placeholder="email@exemplo.com"
               required
-              className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800 border border-gray-600 rounded-xl focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50"
+              className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800/50 border border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none disabled:opacity-50"
             />
           </div>
         </div>
 
-        <div className="mb-6">
+        <div>
           <label htmlFor="password" className="sr-only">
             Senha
           </label>
@@ -153,9 +174,10 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
               type="password"
               id="password"
               name="password"
-              placeholder="Sua Senha"
+              placeholder="Sua senha"
               required
-              className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800 border border-gray-600 rounded-xl focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50"
+              minLength={6}
+              className="w-full py-3 pl-12 pr-4 text-gray-100 placeholder-gray-500 transition duration-150 bg-gray-800/50 border border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none disabled:opacity-50"
             />
           </div>
         </div>
@@ -163,15 +185,18 @@ const LoginComponent: React.FC<{ onLoginSuccess?: () => void }> = ({
         <SubmitButton isLogin={isLogin} />
       </form>
 
-      <p className="mt-6 text-sm text-center text-gray-400">
-        {isLogin ? 'Novo por aqui?' : 'Já tem uma conta?'}
-        <button
-          onClick={toggleMode}
-          className="ml-2 font-semibold text-blue-400 transition duration-150 hover:text-blue-300 focus:outline-none"
-        >
-          {isLogin ? 'Crie Sua Conta' : 'Fazer Login'}
-        </button>
-      </p>
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-400">
+          {isLogin ? 'Novo por aqui?' : 'Já tem uma conta?'}
+          <button
+            onClick={toggleMode}
+            type="button"
+            className="ml-2 font-semibold text-blue-400 transition duration-150 hover:text-blue-300 focus:outline-none focus:underline"
+          >
+            {isLogin ? 'Crie sua conta' : 'Fazer login'}
+          </button>
+        </p>
+      </div>
     </div>
   )
 }

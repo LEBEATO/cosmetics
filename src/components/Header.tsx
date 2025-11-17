@@ -1,13 +1,29 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Auth from '@/components/Auth'
 import { Search, Store, Gem, Menu, X, Figma, Receipt, Users } from 'lucide-react'
 export default function Header() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Preencher campo de busca se houver termo na URL
+  useEffect(() => {
+    const urlSearch = searchParams.get('search')
+    if (urlSearch) {
+      setSearchTerm(urlSearch)
+      // Abrir campo de busca se estiver na página da loja
+      if (pathname === '/' || pathname === '/loja') {
+        setIsSearchOpen(true)
+      }
+    }
+  }, [searchParams, pathname])
 
   const userPoints = 10000
 
@@ -33,14 +49,20 @@ export default function Header() {
   }
 
   const handleSearchSubmit = () => {
-    if (searchTerm.trim() === '') {
-      console.log('Ação: Busca Vazia. Campo deve ser preenchido.')
+    const term = searchTerm.trim()
+    if (term === '') {
+      // Se estiver na página principal, limpa a busca
+      if (pathname === '/' || pathname === '/loja') {
+        router.push('/')
+        setIsSearchOpen(false)
+      }
       return
     }
-    console.log('Ação: Buscando por:', searchTerm)
-    // Aqui você integraria a lógica de busca real
-    // Exemplo: router.push(`/search?term=${searchTerm}`);
-    // setIsSearchOpen(false); // Opcional: fechar após a busca
+    
+    // Redireciona para a página principal com o termo de busca
+    const basePath = pathname === '/loja' ? '/loja' : '/'
+    router.push(`${basePath}?search=${encodeURIComponent(term)}`)
+    setIsSearchOpen(false)
   }
 
   return (
